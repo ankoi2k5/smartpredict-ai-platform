@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import mlApi from "../api/mlApi";
 
 interface UploadResult {
@@ -15,6 +16,7 @@ export default function DataUpload() {
     const [result, setResult] = useState<UploadResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const navigate = useNavigate();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -37,6 +39,7 @@ export default function DataUpload() {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             setResult(res.data);
+            localStorage.setItem("current_dataset", res.data.filename);
         } catch (err: any) {
             setError(err.response?.data?.error || "Upload thất bại, kiểm tra ML Service đã chạy chưa");
         } finally {
@@ -49,12 +52,7 @@ export default function DataUpload() {
             <h1 className="text-2xl font-bold mb-6">Data Upload Center</h1>
 
             <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-white">
-                <input
-                    type="file"
-                    accept=".csv,.xlsx,.xls"
-                    onChange={handleFileChange}
-                    className="mb-4"
-                />
+                <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileChange} className="mb-4" />
                 <p className="text-sm text-gray-500 mb-4">Hỗ trợ file CSV, XLSX, XLS</p>
                 <button
                     onClick={handleUpload}
@@ -65,13 +63,19 @@ export default function DataUpload() {
                 </button>
             </div>
 
-            {error && (
-                <div className="mt-4 bg-red-50 text-red-600 p-4 rounded">{error}</div>
-            )}
+            {error && <div className="mt-4 bg-red-50 text-red-600 p-4 rounded">{error}</div>}
 
             {result && (
                 <div className="mt-6 bg-white rounded-xl shadow p-6">
-                    <h2 className="text-lg font-semibold mb-3">Thông tin dataset</h2>
+                    <div className="flex justify-between items-center mb-3">
+                        <h2 className="text-lg font-semibold">Thông tin dataset</h2>
+                        <button
+                            onClick={() => navigate("/profile")}
+                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm"
+                        >
+                            Xem Data Profiling →
+                        </button>
+                    </div>
                     <div className="grid grid-cols-3 gap-4 mb-6">
                         <div className="bg-blue-50 p-4 rounded">
                             <p className="text-sm text-gray-500">Số dòng</p>
